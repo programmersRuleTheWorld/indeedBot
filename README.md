@@ -14,7 +14,7 @@ Clone the repo
 
 Install dependencies; this will install Puppeteer, Puppeteer's Chrome browser and all other dependencies for this project
 
-`cd bot && npm i`
+`cd indeedBot && npm i`
 
 #Usage Instructions
 
