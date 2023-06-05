@@ -29,3 +29,7 @@ Open a terminal and start a Chrome instance using `google-chrome --remote-debugg
 ## Contact
 
 For any questions or concerns, feel free to contact Robbie at programmers.rule.the.world@gmail.com
+
+## Disclaimer
+
+This is for educational purposes only; any and all action taken by you with this bot is your responsibility.
