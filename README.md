@@ -25,3 +25,7 @@ The main file is `index.js` which contains all function calls.
 
 The bot will not work if you do not first start Chrome properly.
 Open a terminal and start a Chrome instance using `google-chrome --remote-debugging-port=21222` in order to start Chrome in a manner that the bot will be able to communicate.
+
+## Contact
+
+For any questions or concerns, feel free to contact Robbie at programmers.rule.the.world@gmail.com
