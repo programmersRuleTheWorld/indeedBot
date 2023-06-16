@@ -4,9 +4,10 @@ async function determinePageType(browser, jobs, page, count)
     {
             let title = await page.title()
             console.log(count + "|" + title)
-            setTimeout(async() => {
+            console.log("DEBUG DETERMINE")
+            setTimeout(async() => { 
                 await evaluateInputs(browser, jobs, page, count, title)
-            }, 1000);
+            }, 4000);
     }
 
     async function fillInputs(inputs, page)
@@ -15,6 +16,7 @@ async function determinePageType(browser, jobs, page, count)
             {
             if(input != null)
             {
+                console.log(input)
                 if(input.type == 'number' || input.type == 'text')
                 {
                     for(let i = 0; i < 4; i++)
@@ -37,6 +39,26 @@ async function determinePageType(browser, jobs, page, count)
                 {
                     await page.select(input.id, input.option)
                 }
+                if(input.type == 'tel')
+                {
+                    await page.type(input.id, '3215573344')
+                }
+                if(input.type == 'date')
+                {
+                    await page.type(input.id,'06162023')
+                }
+                if(input.type == 'checkbox')
+                {
+                    if(input.value == 'attestationSign' || input.value == 'lieDetectorAttest')
+                    {
+                        for(let i = 0; i < 4; i++)
+                        {
+                            await page.focus(input.id)
+                            await page.keyboard.press('Backspace')
+                        }
+                        await page.type('input', 'Robert Bertram')
+                    }
+                }
             }
         }
     }
@@ -46,121 +68,114 @@ async function determinePageType(browser, jobs, page, count)
         switch(title)
         {
             case 'Answer screener questions from the employer | Indeed.com' : {
-                        const inputs = await page.$$eval('.ia-Questions-item', async e => {
-                            let the = e.map(e => {
+                        const inputs = await page.$$eval('.ia-Questions-item', (e) => {
+                        let filteredInputs = e.map(e => {
                                 if(e.querySelectorAll('input')[0])
                                 {
                                     if(e.querySelectorAll('input')[0].type == 'radio')
                                     {
                                         e.querySelectorAll('input')[0].click()
+                                        return null
                                     }
-                                    if(e.querySelectorAll('input')[0].type == 'text' ||
-                                    e.querySelectorAll('input')[0].type == 'number')
+                                    else if(e.querySelectorAll('input')[0].type == 'text' ||
+                                    e.querySelectorAll('input')[0].type == 'number' ||
+                                    e.querySelectorAll('input')[0].type == 'checkbox' ||
+                                    e.querySelectorAll('input')[0].type == 'date' ||
+                                    e.querySelectorAll('input')[0].type == 'tel' ||
+                                    e.querySelectorAll('input')[0].type == 'checkbox')
                                     {
+                                        if(e.querySelectorAll('input')[0].type == 'checkbox')
+                                        {
+                                            e.querySelectorAll('input')[0].click()
+                                        }
                                         return e = {
                                             type:e.querySelectorAll('input')[0].type,
-                                            id:'#' + e.querySelectorAll('input')[0].id
+                                            id:'#' + e.querySelectorAll('input')[0].id,
+                                            value:e.querySelectorAll('input')[0].value
                                         }
                                     }
                                 }
-                                if(e.querySelectorAll('select')[0])
+                                else if(e.querySelectorAll('select')[0])
                                 {
                                     return e = {
                                         type:e.querySelectorAll('select')[0].type,
                                         id:'#' + e.querySelectorAll('select')[0].id,
-                                        option:e.querySelectorAll('select')[0][0],
+                                        option:e.querySelectorAll('select')[0][1].value,
                                     }
                                 }
-                                if(e.querySelectorAll('textarea')[0])
+                                else if(e.querySelectorAll('textarea')[0])
                                 {
                                     return e = {
                                         type:e.querySelectorAll('textarea')[0].type,
                                         id:'#' + e.querySelectorAll('textarea')[0].id
                                     }
                                 }
-                                if(e.querySelectorAll('checkbox')[0])
+                                else
                                 {
-                                    return e = {
-                                        type:e.querySelectorAll('checkbox')[0].type,
-                                        id:'#' + e.querySelectorAll('checkbox')[0].id
-                                    }
+                                    return e = null
                                 }
                             }
-                        )
-                        
-                        return the
+                        ).filter((e) => {
+                            return e != null
+                        })
+
+                        // determined issue is raw value being returned, still have to debug y
+                        return filteredInputs
                         })
                         
                         await fillInputs(inputs, page)
                         
-                        setTimeout(async() => {
-                    await page.evaluateHandle(async() => {
-                        let button = Array.from(document.querySelectorAll('button')).filter((e) => e.innerText == "Continue")[0]
+                        let button = await page.waitForSelector('.ia-continueButton')
                         await button.click()
-                    })
-                }, 2000);
-                break
+                        break
                 }
             case 'Upload or build a resume for this application | Indeed.com' : {
-                await page.evaluateHandle(async() => {
-                    let button = Array.from(document.querySelectorAll('button')).filter((e) => {
-                        if(e.innerText == "Review your application") 
-                        return e.innerText == "Review your application" 
-                        else if(e.innerText == "Continue")
-                        return e.innerText == "Continue" 
-                    })[0]
-                    await button.click()
-            })
-            break
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
+                break
             }
             case 'Review the contents of this job application | Indeed.com' : {
-                await page.evaluateHandle(async() => {
-                    let button = Array.from(document.querySelectorAll('button')).filter((e) => {
-                        if(e.innerText == "Review your application") 
-                        return e.innerText == "Review your application" 
-                        else if(e.innerText == "Continue")
-                        return e.innerText == "Continue" 
-                        else if(e.innerText == "Submit your application")
-                        return e.innerText == "Submit your application" 
-                    })[0]
-                    await button.click()
-            })
-            break
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
+                break
             }
             case 'Add relevant work experience information | Indeed.com' : {
-                await page.evaluateHandle(async() => {
-                    let button = Array.from(document.querySelectorAll('button')).filter((e) => e.innerText == "Continue")[0]
-                    await button.click()
-                })
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
                 break
             }
             case 'Add documents to support this application | Indeed.com' : {
-                await page.evaluateHandle(async() => {
-                    let button = Array.from(document.querySelectorAll('button')).filter((e) => e.innerText == "Review your application")[0]
-                    await button.click()
-                })
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
                 break
             }
             case 'Your application has been submitted | Indeed.com' : {
                 console.log("MASTER I AM HERE TO SERVE YOU")
                 await page.close()
-                return await clickApply(browser, jobs, count + 1, page)
+                console.log("DEBUG EVAL")
+                await clickApply(browser, jobs, count + 1)
                 break
             }
             case 'Qualification check | Indeed.com' : {
-                    await page.evaluateHandle(async() => {
-                    let button = Array.from(document.querySelectorAll('button')).filter((e) => e.innerText == "Continue to application")[0]
-                    await button.click()
-                })
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
                 break
             }
-    }
-            setTimeout(async() => {
-                await determinePageType(browser, jobs, page, count)
-            }, 10000);
+            case 'Indeed Apply' : {
+                await page.close()
+                break
+            }
+            }
+            if(title != 'Your application has been submitted | Indeed.com')
+            {
+                setTimeout(async() => { 
+                    await determinePageType(browser, jobs, page, count)
+                }, 5000);
+            }
     }
 
     async function clickApply(browser, jobs, count, page = null) {
+                
                 if(count < jobs.length)
                 {
                 let page = await browser.newPage()
@@ -175,25 +190,29 @@ async function determinePageType(browser, jobs, page, count)
                     await page.click(button.id)
                     setTimeout(async() => { 
                         await determinePageType(browser, jobs, page, count)
-                    }, 2000);
+                    }, 6000);
                 }
-
-                if(button.type != "Apply now")
-                {
-                    await page.close()
-                    return await findJobs(page, browser, count)
-                }
-            }
                 else
                 {
-                    console.log(count + ' out of ' + jobs.length + ' jobs applied for!')
-                    await findJobs(page, browser, count)
+                    if(button.type == "Applied")
+                    {
+                        console.log("DEBUG CLICKAPPLY APPLIED " + count)
+                        console.log("Already applied!")
+                        await page.close()
+                        await clickApply(browser, jobs, count + 1)
+                    }
                 }
-
+            }
+            else
+            {
+                console.log("DEBUG CLICKAPPLY DONE" + count)
+                return console.log("Done with this page. Moving on...")
+            }
 }
 
 async function gotoNextPage(page, browser, count) {
     setTimeout(async() => {
+            console.log("DEBUG GOTONEXT")
             count = 0
             const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
             await nextPage.click()
@@ -228,10 +247,11 @@ async function findJobs(page, browser, count) {
                 if(count < jobs.length)
                 {          
                     await clickApply(browser, jobs, count)
-                }
-                else if(count > jobs.length || jobs.length == 0)
-                {
                     await gotoNextPage(page, browser, count)
+                }
+                else
+                {
+                    return await gotoNextPage(page, browser, count)
                 }
 }
 
