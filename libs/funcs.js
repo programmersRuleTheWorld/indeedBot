@@ -1,13 +1,14 @@
-let totalJobs = 0
+import 'dotenv/config'
 
+let totalJobs = 0
+let pageCount = 0
 async function determinePageType(browser, jobs, page, count)
     {
             let title = await page.title()
-            console.log(count + "|" + title)
-            console.log("DEBUG DETERMINE")
+            //console.log(count + "|" + title)
             setTimeout(async() => { 
                 await evaluateInputs(browser, jobs, page, count, title)
-            }, 4000);
+            }, 7000);
     }
 
     async function fillInputs(inputs, page)
@@ -16,8 +17,8 @@ async function determinePageType(browser, jobs, page, count)
             {
             if(input != null)
             {
-                console.log(input)
-                if(input.type == 'number' || input.type == 'text')
+                //console.log(input)
+                if(input.type == 'number')
                 {
                     for(let i = 0; i < 4; i++)
                     {
@@ -25,6 +26,15 @@ async function determinePageType(browser, jobs, page, count)
                         await page.keyboard.press('Backspace')
                     }
                         await page.type(input.id, '8')
+                }
+                if(input.type == 'text')
+                {
+                    for(let i = 0; i < 4; i++)
+                    {
+                        await page.focus(input.id)
+                        await page.keyboard.press('Backspace')
+                    }
+                        await page.type(input.id, process.env.text_param)
                 }
                 if(input.type == 'textarea')
                 {
@@ -47,24 +57,12 @@ async function determinePageType(browser, jobs, page, count)
                 {
                     await page.type(input.id,'06162023')
                 }
-                if(input.type == 'checkbox')
-                {
-                    if(input.value == 'attestationSign' || input.value == 'lieDetectorAttest')
-                    {
-                        for(let i = 0; i < 4; i++)
-                        {
-                            await page.focus(input.id)
-                            await page.keyboard.press('Backspace')
-                        }
-                        await page.type('input', 'Robert Bertram')
-                    }
-                }
             }
         }
     }
 
     async function evaluateInputs(browser, jobs, page, count, title)
-    {
+    {     
         switch(title)
         {
             case 'Answer screener questions from the employer | Indeed.com' : {
@@ -84,7 +82,8 @@ async function determinePageType(browser, jobs, page, count)
                                     e.querySelectorAll('input')[0].type == 'tel' ||
                                     e.querySelectorAll('input')[0].type == 'checkbox')
                                     {
-                                        if(e.querySelectorAll('input')[0].type == 'checkbox')
+                                        if(e.querySelectorAll('input')[0].type == 'checkbox' &&
+                                        e.querySelectorAll('input')[0].checked == false)
                                         {
                                             e.querySelectorAll('input')[0].click()
                                         }
@@ -151,8 +150,10 @@ async function determinePageType(browser, jobs, page, count)
             }
             case 'Your application has been submitted | Indeed.com' : {
                 console.log("MASTER I AM HERE TO SERVE YOU")
+                console.log(jobs[count].title + " at " + jobs[count].organization + " applied to successfully.")
+                totalJobs++
+                console.log("[" + totalJobs + "] " + " total jobs applied for so far!")
                 await page.close()
-                console.log("DEBUG EVAL")
                 await clickApply(browser, jobs, count + 1)
                 break
             }
@@ -196,7 +197,6 @@ async function determinePageType(browser, jobs, page, count)
                 {
                     if(button.type == "Applied")
                     {
-                        console.log("DEBUG CLICKAPPLY APPLIED " + count)
                         console.log("Already applied!")
                         await page.close()
                         await clickApply(browser, jobs, count + 1)
@@ -204,20 +204,28 @@ async function determinePageType(browser, jobs, page, count)
                 }
             }
             else
-            {
-                console.log("DEBUG CLICKAPPLY DONE" + count)
-                return console.log("Done with this page. Moving on...")
+            {   
+                let page = await browser.pages()
+                return await gotoNextPage(page[0], browser, count)
             }
 }
 
 async function gotoNextPage(page, browser, count) {
-    setTimeout(async() => {
-            console.log("DEBUG GOTONEXT")
             count = 0
-            const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
-            await nextPage.click()
-            await findJobs(page, browser, count)
-        }, 4000);
+            pageCount++
+            if(pageCount > 1)
+            {
+                console.log("Done with this page. Moving on... | Traversed " + pageCount + " pages so far.")
+            }
+            else
+            {
+                console.log("Done with this page. Moving on... | Traversed " + pageCount + " page so far.")
+            }
+            setTimeout(async() => { 
+                const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
+                await nextPage.click()
+                return await findJobs(page, browser, count)
+            }, 5000);
 }
 
 async function findJobs(page, browser, count) {
@@ -245,9 +253,8 @@ async function findJobs(page, browser, count) {
                     await gotoNextPage(page, browser, count)
                 }, 5000)*/
                 if(count < jobs.length)
-                {          
+                {
                     await clickApply(browser, jobs, count)
-                    await gotoNextPage(page, browser, count)
                 }
                 else
                 {
@@ -255,4 +262,4 @@ async function findJobs(page, browser, count) {
                 }
 }
 
-export { findJobs, clickApply, determinePageType }
+export { findJobs, clickApply, determinePageType, evaluateInputs }
