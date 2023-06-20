@@ -4,6 +4,7 @@ let totalJobs = 0
 let pageCount = 0
 async function determinePageType(browser, jobs, page, count)
     {
+            await page.bringToFront()
             let title = await page.title()
             //console.log(count + "|" + title)
             setTimeout(async() => { 
@@ -25,7 +26,7 @@ async function determinePageType(browser, jobs, page, count)
                         await page.focus(input.id)
                         await page.keyboard.press('Backspace')
                     }
-                        await page.type(input.id, '8')
+                        await page.type(input.id, process.env.num_param)
                 }
                 if(input.type == 'text')
                 {
@@ -222,9 +223,14 @@ async function gotoNextPage(page, browser, count) {
                 console.log("Done with this page. Moving on... | Traversed " + pageCount + " page so far.")
             }
             setTimeout(async() => { 
-                const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
-                await nextPage.click()
-                return await findJobs(page, browser, count)
+                try{                    
+                    const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
+                    await nextPage.click()
+                    return await findJobs(page, browser, count)
+                    }
+                catch{
+                    return console.log("No more pages left to traverse; exiting gracefully...")
+                }
             }, 5000);
 }
 
@@ -254,7 +260,7 @@ async function findJobs(page, browser, count) {
                 }, 5000)*/
                 if(count < jobs.length)
                 {
-                    await clickApply(browser, jobs, count)
+                    return await clickApply(browser, jobs, count)
                 }
                 else
                 {

@@ -11,7 +11,8 @@ import 'dotenv/config'
     const browserURL = 'http://127.0.0.1:21222';
     const query = process.env.search_query
     const locality = process.env.locality
-    const queryString = 'https://www.indeed.com/jobs?q=' + query + '&l=' + locality + '&filter=0'
+    let remote = process.env.remote_only == true ? "&sc=0kf%3Aattr%28DSQF7%29%3B" : ''
+    const queryString = 'https://www.indeed.com/jobs?q=' + query + remote + '&l=' + locality + '&filter=0'
     const browser = await puppeteer.connect({ browserURL: browserURL })
     //const browser = await puppeteer.connect({ browserURL: browserURL });
     var page = await browser.newPage()
@@ -23,4 +24,5 @@ import 'dotenv/config'
 
     // easy apply
     await findJobs(page, browser, count)
+    return 1
 })();
