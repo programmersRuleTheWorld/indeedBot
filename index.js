@@ -11,7 +11,7 @@ const browserURL = 'http://127.0.0.1:21222';
 const query = process.env.search_query
 const locality = process.env.locality
 const remote = process.env.remote_only == true ? "&sc=0kf%3Aattr%28DSQF7%29%3B" : ''
-const queryString = 'https://www.indeed.com/jobs?q=' + query + remote + '&l=' + locality + '&filter=0';
+const queryString = 'https://www.indeed.com/jobs?q=' + query + remote + '&l=' + locality + '&sort=date' + '&filter=0';
 
 (async () => {
 
@@ -27,17 +27,7 @@ const queryString = 'https://www.indeed.com/jobs?q=' + query + remote + '&l=' + 
     await page.waitForSelector('li')
 
     // easy apply
-    try
-    {
         await findJobs(page, browser, count)
-    }
-    catch
-    {
-        count, pageCount = 0
-        console.log("No more pages left to traverse; looping back...")
-        await page.goto(queryString)
-        await findJobs(page, browser, count)
-    }
 })();
 
 export { queryString, totalJobs, pageCount }

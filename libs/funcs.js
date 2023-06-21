@@ -150,6 +150,11 @@ async function determinePageType(browser, jobs, page, count)
                 await button.click()
                 break
             }
+            case 'Add or update your contact information | Indeed.com' : {
+                let button = await page.waitForSelector('.ia-continueButton')
+                await button.click()
+                break
+            }
             case 'Your application has been submitted | Indeed.com' : {
                 console.log("MASTER I AM HERE TO SERVE YOU")
                 console.log(jobs[count].title + " at " + jobs[count].organization + " applied to successfully.")
@@ -166,10 +171,12 @@ async function determinePageType(browser, jobs, page, count)
             }
             case 'Indeed Apply' : {
                 await page.close()
+                return await clickApply(browser, jobs, count)
                 break
             }
             default : {
                 await page.close()
+                return await clickApply(browser, jobs, count)
                 break
             }
             }
@@ -186,8 +193,8 @@ async function determinePageType(browser, jobs, page, count)
                 if(count < jobs.length)
                 {
                 let page = await browser.newPage()
-                await page.goto(jobs[count].href)
-                let button = await page.$$eval('button', e => {
+                    await page.goto(jobs[count].href)
+                    let button = await page.$$eval('button', e => {
                 let innerButton = e.filter((e) => e.innerText == "Apply now" || e.innerText == "Applied")[0]
                 return { id:"#" + innerButton.id, type:innerButton.innerText }
                 })
@@ -199,15 +206,12 @@ async function determinePageType(browser, jobs, page, count)
                         await determinePageType(browser, jobs, page, count)
                     }, 6000);
                 }
-                else
-                {
-                    if(button.type == "Applied")
+                    else if(button.type == "Applied")
                     {
                         console.log("Already applied!")
                         await page.close()
                         await clickApply(browser, jobs, count + 1)
                     }
-                }
             }
             else
             {   
@@ -219,13 +223,16 @@ async function determinePageType(browser, jobs, page, count)
 async function gotoNextPage(page, browser, count) {
             count = 0
             pageCount++
-            if(pageCount > 1)
+            if(process.env.display_page_traversal == true)
             {
-                console.log("Done with this page. Moving on... | Traversed " + pageCount + " pages so far.")
-            }
-            else
-            {
-                console.log("Done with this page. Moving on... | Traversed " + pageCount + " page so far.")
+                if(pageCount > 1)
+                {
+                    console.log("Done with this page. Moving on... | Traversed " + pageCount + " pages so far.")
+                }
+                else
+                {
+                    console.log("Done with this page. Moving on... | Traversed " + pageCount + " page so far.")
+                }
             }
             setTimeout(async() => { 
                 try{                    
@@ -234,10 +241,16 @@ async function gotoNextPage(page, browser, count) {
                     }
                 catch{
                     pageCount = 0
-                    console.log("No more pages left to traverse; looping back...")
+                    if(process.env.display_page_traversal == true)
+                    {
+                        console.log("No more pages left to traverse; looping back...")
+                    }
                     await page.goto(queryString)
                 }
-                return await findJobs(page, browser, count)
+                finally
+                {
+                    return await findJobs(page, browser, count)
+                }
             }, 5000);
 }
 
@@ -267,7 +280,15 @@ async function findJobs(page, browser, count) {
                 }, 5000)*/
                 if(count < jobs.length)
                 {
-                    return await clickApply(browser, jobs, count)
+                    try
+                    {
+                        return await clickApply(browser, jobs, count)
+                    }
+                    catch(e)
+                    {
+                        console.log(e)
+                        return await gotoNextPage(page, browser, count)
+                    }
                 }
                 else
                 {
