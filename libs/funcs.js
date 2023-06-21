@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { queryString } from '../index.js'
 
 let totalJobs = 0
 let pageCount = 0
@@ -167,6 +168,10 @@ async function determinePageType(browser, jobs, page, count)
                 await page.close()
                 break
             }
+            default : {
+                await page.close()
+                break
+            }
             }
             if(title != 'Your application has been submitted | Indeed.com')
             {
@@ -226,11 +231,13 @@ async function gotoNextPage(page, browser, count) {
                 try{                    
                     const nextPage = await page.waitForSelector(('a[data-testid=pagination-page-next]'))
                     await nextPage.click()
-                    return await findJobs(page, browser, count)
                     }
                 catch{
-                    return console.log("No more pages left to traverse; exiting gracefully...")
+                    pageCount = 0
+                    console.log("No more pages left to traverse; looping back...")
+                    await page.goto(queryString)
                 }
+                return await findJobs(page, browser, count)
             }, 5000);
 }
 
