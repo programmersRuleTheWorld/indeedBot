@@ -1,3 +1,5 @@
+# Due to personal reasons, this project has been abandoned by its original maintainer. I hope that someone else takes this and makes something great. Never, ever give up in life. God bless you. - Robbie :)
+
 # Welcome to indeedBot!
 
 Are you tired of your time not being respected by employers, recruiters or headhunters? We sure are, so, after looking for a job application bot for Indeed and only finding broken ones, we made our own.
