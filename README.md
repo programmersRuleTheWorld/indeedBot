@@ -1,4 +1,4 @@
-# Due to personal reasons, this project has been abandoned by its original maintainer. I hope that someone else takes this and makes something great. Never, ever give up in life. God bless you. - Robbie :)
+# Due to personal reasons, this project has been abandoned by its original maintainer. I hope that someone else takes this and makes something great. You hereby have permission to modify this in any way, including using it to create a paid product however you may choose. I forfeit all rights to this software. I only ask that you credit me, Robbie Bertram, with the initial build if you do create something with it! Never, ever give up in life. God bless you. - Robbie :)
 
 # Welcome to indeedBot!
 
